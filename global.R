@@ -1,6 +1,11 @@
+
+## For snapshots of CRAN Repositories:
 #library(checkpoint)
-#checkpoint("2017-03-31") # YYYY-MM-DD
+#checkpoint("2017-03-31") # YYYY-MM-DD  Sys.Date() - 1
 #packageVersion("markdown")
+
+#require(devtools)
+#install_version("rsconnect", version = "0.6", repos = "http://cran.us.r-project.org")
 
 ## Clear workspace (important for debugging in interactive session)
 rm(list=ls())
@@ -18,14 +23,8 @@ pacman::p_load("shiny","shinydashboard",
 )
 
 
-
-## Source
-#source('heatmap2.R') # overwrite heatmap.2 from gplots with my customized version
-
 ## Global variables - used across pages and apps
-datGlobal <- NULL
-updGlobal <- 0                          # initialize counter to 0
-
 permNum <- 0
 
-'%nin%' <- Negate('%in%')
+## Global functions and operators
+'%nin%' <- Negate('%in%') ## define NOT IN custom operator

@@ -10,32 +10,37 @@
 #http://getbootstrap.com/components/#glyphicons
 # glyphicon glyphicon-stats, 
 
+
+# To increase icon sizes relative to their container, use the fa-lg (33% increase), fa-2x, fa-3x, fa-4x, or fa-5x classes.
 sidebar <- dashboardSidebar(
     sidebarMenu(
         menuItem(
             "Introduccion",
             tabName = "intro",
-            icon = icon("play")
+            icon = icon("play", class = "fa-lg")
         ),
         menuItem(
             "Simulador",
             tabName = "simulador",
-            icon = icon("flask")
+            badgeLabel = "Santiago", badgeColor = "green",
+            icon = icon("flask", class = "fa-lg")
         ),
         menuItem(
             "Regresion Linear",
             tabName = "regresion",
-            icon = icon("line-chart")
+            badgeLabel = "German", badgeColor = "blue",
+            icon = icon("line-chart", class = "fa-lg")
         ),
         menuItem(
             "ANOVA",
             tabName = "anova",
-            icon = icon("area-chart")
+            badgeLabel = "Manuel", badgeColor = "yellow",
+            icon = icon("area-chart", class = "fa-lg")
         ),
         menuItem(
             "Referencias",
             tabName = "refe",
-            icon = icon("leanpub")
+            icon = icon("leanpub", class = "fa-lg")
         )
     )
 )

@@ -25,8 +25,8 @@ simulador.box <- fluidPage(
                             verbatimTextOutput("ControlData")
                      ),
                      column(12, 
-                            actionButton("btnCalcularProm", "Calcular Promedios", width = "50%",
-                                         icon("paper-plane"), style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                            actionButton("btnCalcularProm", "Calcular Promedios", width = "100%",
+                                         icon("cogs"), style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
                             tags$br(),
                             
                             "Diferencia de promedios:", verbatimTextOutput("DiferenciaPromedios")
@@ -78,7 +78,7 @@ simulador.box <- fluidPage(
                 )
             ),
             column(width = 8,
-                   box(width = NULL , solidHeader = FALSE, status = "danger", title = "Permutaciones", #background = "red", 
+                   box(width = NULL , solidHeader = TRUE, status = "success", title = "Permutaciones", collapsible = TRUE, #background = "red", 
                         #h2('The mtcars data'),
                         #DT::dataTableOutput("TablaPermutaciones")
                         

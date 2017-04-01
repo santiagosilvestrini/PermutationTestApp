@@ -1,19 +1,17 @@
+# Resources
+source("helpers/custom_functions.R") 
+
+# On Load
 shinyjs::disable("btnPermutar")
 shinyjs::disable("btnPermutar2") 
 
-output$summary <- renderPrint({
-    if( is.null(datGlobal) && (input$update == updGlobal) ) {
-        stop("No data uploaded")
-    }
-    summary(datGlobal)
-})
+# [ToDo] Put some order below!
 
 output$TratamientoData <- renderText({ paste0("Promedio: ", as.character(mean(vecTratamiento()))) })
 output$ControlData <- renderText({ paste0("Promedio: ", as.character(mean(vecControl()))) })
 output$DiferenciaPromedios <- renderText({ as.character(mean(vecTratamiento()) - mean(vecControl())) })
 
 output$ttest <- renderUI({ 
-    
     ga <- vecTratamiento()
     gb <- vecControl()
 
@@ -30,7 +28,7 @@ vecTodos <- eventReactive(input$btnCalcularProm, {
 })
 
 output$TotalPermutaciones <- renderText({ 
-    paste0(input$btnPermutar[1], "/", totalPermu())
+    paste0(control$PermStep, "/", totalPermu())
 })
 
 totalPermu <- reactive({ dim(combn(vecTodos(),3))[2] })
@@ -49,7 +47,7 @@ todas <- eventReactive(input$btnCalcularProm, {
 #todos <- c(varTratamientoMean, varControlMean)
 
 vecTratamiento <- eventReactive(input$btnCalcularProm, {
-    print("boton1")
+    #print("boton1")
     shinyjs::enable("btnPermutar")
     shinyjs::enable("btnPermutar2") 
     as.numeric(unlist(strsplit(input$txtTratamiento, split="\n")))
@@ -68,20 +66,26 @@ vecControl <- eventReactive(input$btnCalcularProm, {
 observeEvent(input$btnPermutar, {
     btnClick <- input$btnPermutar[1]
     
-    if (btnClick <= totalPermu()){
-        newga <- todas()[,btnClick]
+    control$PermStep <- control$PermStep + 1
+    #print(paste0("control$PermStep:", control$PermStep))
+    
+    if(control$PermStep == totalPermu()) shinyjs::disable("btnPermutar")
+    
+    if (control$PermStep <= totalPermu()){
+        newga <- todas()[,control$PermStep]
         newgb <- vecTodos()[vecTodos() %nin% newga]
         
         newgaC <- paste(as.character(newga), collapse=",")
         newgbC <- paste(as.character(newgb), collapse=",")
         
-        if(btnClick > 1){
+        if(control$PermStep > 1){
             ga <- input$txtGrupoA
             gb <- input$txtGrupoB
             ma <- input$txtMeanA
             mb <- input$txtMeanB
             dm <- input$txtDifPromAB
         }else{
+            meanDiff$results <- NULL
             ga <- NULL
             gb <- NULL
             ma <- NULL
@@ -94,13 +98,17 @@ observeEvent(input$btnPermutar, {
         updateTextAreaInput(session, "txtMeanB", value = paste0(mb, round(mean(newgb),2), "\n" ))
         updateTextAreaInput(session, "txtDifPromAB", value = paste0(dm, round(abs(mean(newga)-mean(newgb)),2), "\n" ))
         
-        if(btnClick == totalPermu()) shinyjs::disable("btnPermutar")
+        vDiff <- mean(newga)-mean(newgb)
+        meanDiff$results[control$PermStep] <- vDiff
+        
+        
     }
 
         
 })
 
 meanDiff <- reactiveValues()
+control <- reactiveValues(PermStep=0)
 
 observeEvent(input$btnPermutar2, {
     #updateTextAreaInput(session, "txtGrupoA", value = "")
@@ -109,11 +117,13 @@ observeEvent(input$btnPermutar2, {
     #updateTextAreaInput(session, "txtMeanB", value = "")
     #updateTextAreaInput(session, "txtDifPromAB", value = "")
     
-    print(input$numPermu)
-    monte <- round(runif(input$numPermu, min=1, max=35), 0)
+    #print(input$numPermu)
+    control$PermStep <- 0
+    meanDiff$results <- NULL
+    
+    monte <- round(runif(input$numPermu, min=1, max=totalPermu()), 0)
     selected <- todas()[,monte]
     
-    #dim(meanDiff$results) <- input$numPermu
     vDiff <- rep(0, input$numPermu)
     for (i in 1:input$numPermu) {
         newga <- selected[,i]
@@ -155,7 +165,7 @@ output$Observado <- renderValueBox({
     
     valueBox(round(valor, 4) , 
              "Valor |Observado|", 
-             icon = icon("area-chart"), 
+             icon = icon("window-close"), 
              color = "teal"
     )
 })
@@ -165,9 +175,9 @@ output$MayoresCount <- renderValueBox({
     difs <- as.numeric(unlist(strsplit(input$txtDifPromAB, split="\n")))
     mayores <- length(difs[difs >= obs])
 
-    valueBox(value = tags$p(mayores, style = "font-size: 80%;"),
+    valueBox(value = tags$p(mayores, style = "font-size: 100%;"),
              subtitle = "Valores > |Observado|", 
-             icon = icon("bar-chart"), 
+             icon = icon("slack"), 
              color = "purple")
 })
 
@@ -183,13 +193,14 @@ output$MayoresPerc <- renderValueBox({
     
     valueBox(paste0(percent, "%") , 
              "% Valores > al |Observado|", 
-             icon = icon("stats", lib = "glyphicon"), 
+             icon = icon("percent"), 
              color = "yellow")
     
 })
 
 
 output$plotDensity <- renderPlot({
+    input$btnPermutar
     input$btnPermutar2
     
     if(is.null(meanDiff$results)) return(NULL)
@@ -202,56 +213,30 @@ output$plotDensity <- renderPlot({
 output$plotHistogram <- renderPlotly({
     input$btnPermutar2
     
-    if(is.null(meanDiff$results)) return(NULL)
     
-    #data <- data.frame(meanDiff$results)
+    if( is.null( meanDiff$results ) ) return(NULL)
     
-    #ggplot(data, aes(x=data)) + 
-     #   geom_histogram(aes(y=..density..),      # Histogram with density instead of count on y-axis
-      #                 binwidth=.5,
-       #                colour="black", fill="white") +
-        #geom_density(alpha=.2, fill="#FF6666")  # Overlay with transparent density plot
+    #print(length( meanDiff$results<2 ))
+    #print(dim( meanDiff$results<2 ))
     
-    
-    data <- meanDiff$results #rnorm(1000)
+    data <- meanDiff$results
     fit <- density(data)
     
     xbins <- compute_bins(data, input$xbins)
+    #print(paste0("binds:", xbins))
+    
     maxhist <- max(table(cut(data,seq(min(data),max(data),dist(range(data))/input$xbins)))) 
-    print(paste0("maxhist: ", maxhist))
-    print(paste0("diff.Absoluta: ", diff.Absoluta()))
+    
+    #print(paste0("maxhist: ", maxhist))
+    #print(paste0("diff.Absoluta: ", diff.Absoluta()))
     
     plot_ly(x = data) %>% 
         add_histogram( autobinx = FALSE, xbins = xbins, name = "Histograma") %>% 
         add_lines(x = fit$x, y = fit$y, fill = "tozeroy", yaxis = "y2", name = "Densidad") %>% 
         layout(yaxis2 = list(overlaying = "y", side = "right"))  %>%
-        add_trace(x = c(diff.Absoluta(), diff.Absoluta()), y= c(0.1, maxhist), mode = "lines", name = "|Valor Observado|") %>%
-        add_trace(x = (-1)*c(diff.Absoluta(), diff.Absoluta()), y= c(0.1, maxhist), mode = "lines", name = "-|Valor Observado|")
-
-        
-    
-    #abline(v=c(1, -1)*abs(mean(vecTratamiento()) - mean(vecControl())), col="red", lwd=2, lty=1:2)
-    #+
-     #   geom_vline(aes(xintercept=mean(rating, na.rm=T)),   # Ignore NA values for mean
-      #             color="red", linetype="dashed", size=1)
-    
-    #hist(meanDiff$results, xlab="Diferencia de Promedios",
-    #     main="Histograma de Todas las diferencias", col="grey", prob = TRUE)
-    #abline(v=c(1, -1)*abs(mean(vecTratamiento()) - mean(vecControl())), col="red", lwd=2, lty=1:2)
-    
-    #plot(density(meanDiff$results), xlab="Diferencia de Promedios",
-    #     main="Densidad de todas las diferencias")
-    #abline(v=c(1, -1)*abs(mean(vecTratamiento()) - mean(vecControl())), col="red", lwd=2, lty=1:2)
+        add_trace(x = c(diff.Absoluta(), diff.Absoluta()), y= c(0.1, maxhist), mode = "lines", name = "|Valor Observado|", type = "scatter", line = list(color = "#D00000", dash = "dash")) %>% ## 
+        add_trace(x = (-1)*c(diff.Absoluta(), diff.Absoluta()), y= c(0.1, maxhist), mode = "lines", name = "-|Valor Observado|", type = "scatter", line = list(color = "#D00000"))
 })
-
-# convenience function for computing xbin/ybin object given a number of bins
-compute_bins <- function(x, n) {
-    list(
-        start = min(x),
-        end = max(x),
-        size = (max(x) - min(x)) / n
-    )
-}
 
 
 # output$TablaPermutaciones <- DT::renderDataTable({

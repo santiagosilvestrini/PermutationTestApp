@@ -13,7 +13,7 @@
 
 # To increase icon sizes relative to their container, use the fa-lg (33% increase), fa-2x, fa-3x, fa-4x, or fa-5x classes.
 sidebar <- dashboardSidebar(
-    sidebarMenu(
+    sidebarMenu( id="menuBase",
         menuItem(
             "Introduccion",
             tabName = "intro",
@@ -42,5 +42,10 @@ sidebar <- dashboardSidebar(
             tabName = "refe",
             icon = icon("leanpub", class = "fa-lg")
         )
+    ),
+    conditionalPanel(
+        condition = "input.menuBase == 'simulador'",
+        selectInput("period", "Period:", 
+                    choices = list("Years" = 1, "Months" = 2))
     )
 )

@@ -3,35 +3,99 @@ simulador.box <- fluidPage(
         fluidRow(
            
             column(width = 4,
-                box( width = NULL, solidHeader = FALSE, status = "danger", title = "Datos", #background = "red", 
-                 
-                     column(6, 
-                             textAreaInput("txtTratamiento", 
-                                           label = "Grupo A", 
-                                           value = "19\n22\n25\n26", 
-                                           rows = 6,
-                                           placeholder = "Ingrese sus datos"),
-                            
-                             verbatimTextOutput("TratamientoData")
-                             #div(strong("Desde: "), textOutput("myTimeSeriesfrom", inline = TRUE), strong("Hasta: "), textOutput("myTimeSeriesto", inline = TRUE))
+                
+                     fluidRow(
+                         tabBox( title = "Distribuciones", id = "tabDist", width = NULL, side = "rigth", height = "200px",
+                                 selected = "Grupo A",
+                                 tabPanel(title = "Grupo A",
+                                          selectInput("selectDistributionA", label = NULL, 
+                                                      choices = list("Normal" = 1, "Log Normal" = 2,
+                                                                     "Exponencial" = 3), selected = 1),
+                                          
+                                          conditionalPanel(condition = "input.selectDistributionA == 1",
+                                                           
+                                                           column(4,
+                                                                  numericInput("normal.a.mu", 
+                                                                               label = "mu", 
+                                                                               value = 0)
+                                                           ),
+                                                           column(4,
+                                                                  numericInput("normal.a.sigma", 
+                                                                               label = "s", 
+                                                                               value = 1)
+                                                           ),
+                                                           column(4,
+                                                                  numericInput("normal.a.sample", 
+                                                                               label = "n", 
+                                                                               value = 10)
+                                                           )
+                                                           
+                                          )
+                                 ),
+                                 tabPanel(title = "Grupo B",
+                                          selectInput("selectDistributionB", label = NULL, 
+                                                      choices = list("Normal" = 1, "Log Normal" = 2,
+                                                                     "Exponencial" = 3), selected = 1),
+                                          
+                                          conditionalPanel(condition = "input.selectDistributionB == 1",
+                                                           
+                                                           column(4,
+                                                                  numericInput("normal.b.mu", 
+                                                                               label = "mu", 
+                                                                               value = 0)
+                                                           ),
+                                                           column(4,
+                                                                  numericInput("normal.b.sigma", 
+                                                                               label = "s", 
+                                                                               value = 1)
+                                                           ),
+                                                           column(4,
+                                                                  numericInput("normal.b.sample", 
+                                                                               label = "n", 
+                                                                               value = 5)
+                                                           )
+                                                           
+                                          )
+                                 )
+                     )),
+                     fluidRow(
+                        column(6, 
+                            actionButton("btnGenerar", "Generar", width = "100%",
+                                     icon("magic"), style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                        )
                      ),
-                     column(6, 
-                            textAreaInput("txtControl", 
-                                          label = "Grupo B", 
-                                          value = "23\n33\n40", 
-                                          rows = 6,
-                                          placeholder = "Ingrese sus datos"),
-                            
-                            verbatimTextOutput("ControlData")
+                    box( width = NULL, solidHeader = FALSE, status = "danger", title = "Datos", #background = "red", 
+                        fluidRow(
+                         column(6, 
+                                 textAreaInput("txtTratamiento", 
+                                               label = "Grupo A", 
+                                               value = "19\n22\n25\n26", 
+                                               rows = 6,
+                                               placeholder = "Ingrese sus datos"),
+                                
+                                 verbatimTextOutput("TratamientoData")
+                                 #div(strong("Desde: "), textOutput("myTimeSeriesfrom", inline = TRUE), strong("Hasta: "), textOutput("myTimeSeriesto", inline = TRUE))
+                         ),
+                         column(6, 
+                                textAreaInput("txtControl", 
+                                              label = "Grupo B", 
+                                              value = "23\n33\n40", 
+                                              rows = 6,
+                                              placeholder = "Ingrese sus datos"),
+                                
+                                verbatimTextOutput("ControlData")
+                         )
                      ),
-                     column(12, 
-                            actionButton("btnCalcularProm", "Calcular Promedios", width = "100%",
-                                         icon("cogs"), style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
-                            tags$br(),
-                            
-                            "Diferencia de promedios:", verbatimTextOutput("DiferenciaPromedios")
-                            #valueBoxOutput("diferenciaBox", width = 3)
-                    )
+                     fluidRow(
+                         column(12, 
+                                actionButton("btnCalcularProm", "Calcular Promedios", width = "100%",
+                                             icon("cogs"), style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                                tags$br(),
+                                
+                                "Diferencia de promedios:", verbatimTextOutput("DiferenciaPromedios")
+                                #valueBoxOutput("diferenciaBox", width = 3)
+                        )
+                     )
                 ),
                 
                 box(width = NULL, solidHeader = FALSE, status = "danger", #background = "red", 
@@ -45,12 +109,12 @@ simulador.box <- fluidPage(
                     radioButtons("permStyle", "Tipo de Permutacion:", c("Exacta", "Aproximada"), inline = T),
                     helpText("Seleccione el tipo de permutacion deseada"),
                     
-                    conditionalPanel("input.permStyle === 'Exacta'",
+                    conditionalPanel(condition = "input.permStyle == 'Exacta'",
                         actionButton("btnPermutar", "Permutar", width = "50%",
                                       icon("exchange"), style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
                     ),
                     
-                    conditionalPanel("input.permStyle === 'Aproximada'",
+                    conditionalPanel(condition = "input.permStyle == 'Aproximada'",
                                 splitLayout(cellWidths = c("50%", "25%", "25%"),  
                                      actionButton("btnPermutar2", "Permutar", width = "100%",
                                                   icon("exchange"), style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),

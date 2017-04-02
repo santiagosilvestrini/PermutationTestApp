@@ -5,33 +5,8 @@ simulador.box <- fluidPage(
             column(width = 4,
                 
                      fluidRow(
-                         tabBox( title = "Distribuciones", id = "tabDist", width = NULL, side = "rigth", height = "200px",
+                         tabBox( title = "Distribuciones", id = "tabDist", width = NULL, side = "right", height = "200px",
                                  selected = "Grupo A",
-                                 tabPanel(title = "Grupo A",
-                                          selectInput("selectDistributionA", label = NULL, 
-                                                      choices = list("Normal" = 1, "Log Normal" = 2,
-                                                                     "Exponencial" = 3), selected = 1),
-                                          
-                                          conditionalPanel(condition = "input.selectDistributionA == 1",
-                                                           
-                                                           column(4,
-                                                                  numericInput("normal.a.mu", 
-                                                                               label = "mu", 
-                                                                               value = 0)
-                                                           ),
-                                                           column(4,
-                                                                  numericInput("normal.a.sigma", 
-                                                                               label = "s", 
-                                                                               value = 1)
-                                                           ),
-                                                           column(4,
-                                                                  numericInput("normal.a.sample", 
-                                                                               label = "n", 
-                                                                               value = 10)
-                                                           )
-                                                           
-                                          )
-                                 ),
                                  tabPanel(title = "Grupo B",
                                           selectInput("selectDistributionB", label = NULL, 
                                                       choices = list("Normal" = 1, "Log Normal" = 2,
@@ -53,6 +28,31 @@ simulador.box <- fluidPage(
                                                                   numericInput("normal.b.sample", 
                                                                                label = "n", 
                                                                                value = 5)
+                                                           )
+                                                           
+                                          )
+                                 ),
+                                 tabPanel(title = "Grupo A",
+                                          selectInput("selectDistributionA", label = NULL, 
+                                                      choices = list("Normal" = 1, "Log Normal" = 2,
+                                                                     "Exponencial" = 3), selected = 1),
+                                          
+                                          conditionalPanel(condition = "input.selectDistributionA == 1",
+                                                           
+                                                           column(4,
+                                                                  numericInput("normal.a.mu", 
+                                                                               label = "mu", 
+                                                                               value = 0)
+                                                           ),
+                                                           column(4,
+                                                                  numericInput("normal.a.sigma", 
+                                                                               label = "s", 
+                                                                               value = 1)
+                                                           ),
+                                                           column(4,
+                                                                  numericInput("normal.a.sample", 
+                                                                               label = "n", 
+                                                                               value = 10)
                                                            )
                                                            
                                           )

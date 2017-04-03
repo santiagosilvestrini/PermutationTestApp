@@ -106,6 +106,8 @@ grupoB <- c(23, 33, 40)
 todos <- c(grupoA, grupoB)
 perms <- combn(todos,4)
 
+paste(as.character(grupoA), collapse="\n")
+
 pp <- perms[,1]
 todos - perms[,1]
 

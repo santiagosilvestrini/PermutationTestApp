@@ -3,6 +3,7 @@ source("helpers/custom_functions.R")
 
 # On Load
 shinyjs::disable("btnPermutar")
+shinyjs::disable("btnPermutarTodos")
 shinyjs::disable("btnPermutar2") 
 
 # [ToDo] Put some order below!
@@ -31,13 +32,22 @@ output$TotalPermutaciones <- renderText({
     paste0(control$PermStep, "/", totalPermu())
 })
 
-totalPermu <- reactive({ dim(combn(vecTodos(),3))[2] })
+totalPermu <- reactive({ 
+    dim(combn(vecTodos(),numGrupoA()))[2] 
+})
 
 diff.Absoluta <- reactive({ abs(mean(vecTratamiento()) - mean(vecControl())) })
-    
+
+numGrupoA <- reactive({ 
+    length(as.numeric(unlist(strsplit(input$txtTratamiento, split="\n"))))
+})    
+
+numGrupoB <- reactive({ 
+    length(as.numeric(unlist(strsplit(input$txtControl, split="\n")))) 
+})
 
 todas <- eventReactive(input$btnCalcularProm, {
-    combn(vecTodos(),4)
+    combn(vecTodos(),numGrupoA())
 })
 
 #length(permn(3))
@@ -49,6 +59,7 @@ todas <- eventReactive(input$btnCalcularProm, {
 vecTratamiento <- eventReactive(input$btnCalcularProm, {
     #print("boton1")
     shinyjs::enable("btnPermutar")
+    shinyjs::enable("btnPermutarTodos")
     shinyjs::enable("btnPermutar2") 
     as.numeric(unlist(strsplit(input$txtTratamiento, split="\n")))
 })
@@ -63,17 +74,69 @@ vecControl <- eventReactive(input$btnCalcularProm, {
 #                 width = "50%", icon("exchange"), style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
 #})
 
+observeEvent(input$btnGenerar, {
+    aValues <- NULL
+    bValues <- NULL
+    switch(input$selectDistributionA, 
+           "1"={
+               aValues <- round(rnorm(n = input$normal.a.sample, mean = input$normal.a.mu, sd = input$normal.a.sigma), 2)
+           },
+           "2"={
+               aValues <- round(rlnorm(n = input$lognormal.a.sample, mean = input$lognormal.a.mu, sd = input$lognormal.a.sigma), 2)
+           },
+           "3"={
+               aValues <- round(rexp(n = input$exponencial.a.sample, rate = input$exponencial.a.lambda), 2)
+           },
+           "4"={
+               aValues <- round(rchisq(n = input$chi2.a.sample, df = input$chi2.a.df), 2)
+           },
+           "5"={
+               aValues <- round(rbinom(size = input$binomial.a.sample, n = input$binomial.a.n, prob = input$binomial.a.p), 2)
+           },
+           {
+               print(paste0("Adefault:", input$selectDistributionA))
+           }
+    )
+    
+    switch(input$selectDistributionB, 
+           "1"={
+               bValues <- round(rnorm(n = input$normal.b.sample, mean = input$normal.b.mu, sd = input$normal.b.sigma), 2)
+           },
+           "2"={
+               bValues <- round(rlnorm(n = input$lognormal.b.sample, mean = input$lognormal.b.mu, sd = input$lognormal.b.sigma), 2)
+           },
+           "3"={
+               bValues <- round(rexp(n = input$exponencial.b.sample, rate = input$exponencial.b.lambda), 2)
+           },
+           "4"={
+               bValues <- round(rchisq(n = input$chi2.b.sample, df = input$chi2.b.df), 2)
+           },
+           "5"={
+               bValues <- round(rbinom(size = input$binomial.b.sample, n = input$binomial.b.n, prob = input$binomial.b.p), 2)
+           },
+           {
+               print(paste0("Bdefault:", input$selectDistributionB))
+           }
+    )
+    
+    updateTextAreaInput(session, "txtTratamiento", value = paste(as.character(aValues), collapse="\n"))
+    updateTextAreaInput(session, "txtControl", value = paste(as.character(bValues), collapse="\n"))
+})
+
 observeEvent(input$btnPermutar, {
     btnClick <- input$btnPermutar[1]
     
     control$PermStep <- control$PermStep + 1
-    #print(paste0("control$PermStep:", control$PermStep))
+    
+    #print(paste0("totalPermu:", totalPermu()))
     
     if(control$PermStep == totalPermu()) shinyjs::disable("btnPermutar")
     
     if (control$PermStep <= totalPermu()){
         newga <- todas()[,control$PermStep]
+        #print(paste0("vecTodos:", vecTodos()))
         newgb <- vecTodos()[vecTodos() %nin% newga]
+        #print(paste0("newgb:", newgb))
         
         newgaC <- paste(as.character(newga), collapse=",")
         newgbC <- paste(as.character(newgb), collapse=",")
@@ -107,17 +170,61 @@ observeEvent(input$btnPermutar, {
         
 })
 
+observeEvent(input$btnPermutarTodos, {
+    control$PermStep <- 0
+    meanDiff$results <- NULL
+    
+    selected <- todas()
+    
+    print(length(todas()))
+    
+    vDiff <- rep(0, length(todas()))
+    
+    print(paste0("totalPermu:", totalPermu()))
+    print(paste0("dim(todas()):", dim(todas())))
+    print(paste0("length(todas()):", length(todas())))
+    print(paste0("length(selected:", length(selected)))
+                 
+    for (i in 1:totalPermu()) {
+        #print(paste0("i:", i))
+        newga <- selected[,i]
+        newgb <- vecTodos()[vecTodos() %nin% selected[,i]]
+        
+        newgaC <- paste(as.character(newga), collapse=",")
+        newgbC <- paste(as.character(newgb), collapse=",")
+        
+        
+        if(i == 1){
+            ga <- paste0(newgaC, "\n" )
+            gb <- paste0(newgbC, "\n" )
+            ma <- paste0(round(mean(newga),2), "\n" )
+            mb <- paste0(round(mean(newgb),2), "\n" )
+            dm <- paste0(round(abs(mean(newga)-mean(newgb)),2), "\n" )
+        }else{
+            ga <- paste0(ga, newgaC, "\n" )
+            gb <- paste0(gb, newgbC, "\n" )
+            ma <- paste0(ma, round(mean(newga),2), "\n" )
+            mb <- paste0(mb, round(mean(newgb),2), "\n" )
+            dm <- paste0(dm, round(abs(mean(newga)-mean(newgb)),2), "\n" )
+        }
+        
+        vDiff[i] <- mean(newga)-mean(newgb)
+        
+    }
+    meanDiff$results <- vDiff
+    
+    updateTextAreaInput(session, "txtGrupoA", value = ga)
+    updateTextAreaInput(session, "txtGrupoB", value = gb)
+    updateTextAreaInput(session, "txtMeanA", value = ma)
+    updateTextAreaInput(session, "txtMeanB", value = mb)
+    updateTextAreaInput(session, "txtDifPromAB", value = dm)
+})
+
 meanDiff <- reactiveValues()
 control <- reactiveValues(PermStep=0)
 
 observeEvent(input$btnPermutar2, {
-    #updateTextAreaInput(session, "txtGrupoA", value = "")
-    #updateTextAreaInput(session, "txtGrupoB", value = "")
-    #updateTextAreaInput(session, "txtMeanA", value = "")
-    #updateTextAreaInput(session, "txtMeanB", value = "")
-    #updateTextAreaInput(session, "txtDifPromAB", value = "")
-    
-    #print(input$numPermu)
+
     control$PermStep <- 0
     meanDiff$results <- NULL
     
@@ -200,7 +307,9 @@ output$MayoresPerc <- renderValueBox({
 
 
 output$plotDensity <- renderPlot({
+    
     input$btnPermutar
+    input$btnPermutarTodos
     input$btnPermutar2
     
     if(is.null(meanDiff$results)) return(NULL)
@@ -211,13 +320,13 @@ output$plotDensity <- renderPlot({
 })
 
 output$plotHistogram <- renderPlotly({
+    input$btnPermutar
+    input$btnPermutarTodos
     input$btnPermutar2
     
     
     if( is.null( meanDiff$results ) ) return(NULL)
-    
-    #print(length( meanDiff$results<2 ))
-    #print(dim( meanDiff$results<2 ))
+    if( length( meanDiff$results ) < 2 ) return(NULL)
     
     data <- meanDiff$results
     fit <- density(data)

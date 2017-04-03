@@ -10,51 +10,60 @@ simulador.box <- fluidPage(
                                  tabPanel(title = "Grupo B",
                                           selectInput("selectDistributionB", label = NULL, 
                                                       choices = list("Normal" = 1, "Log Normal" = 2,
-                                                                     "Exponencial" = 3), selected = 1),
+                                                                     "Exponencial" = 3, "Chi-Cuadrada" = 4, "Binomial" = 5), selected = 1),
                                           
-                                          conditionalPanel(condition = "input.selectDistributionB == 1",
-                                                           
-                                                           column(4,
-                                                                  numericInput("normal.b.mu", 
-                                                                               label = "mu", 
-                                                                               value = 0)
-                                                           ),
-                                                           column(4,
-                                                                  numericInput("normal.b.sigma", 
-                                                                               label = "s", 
-                                                                               value = 1)
-                                                           ),
-                                                           column(4,
-                                                                  numericInput("normal.b.sample", 
-                                                                               label = "n", 
-                                                                               value = 5)
-                                                           )
-                                                           
+                                          conditionalPanel(condition = "input.selectDistributionB == 1", #normal
+                                                           column(4, numericInput("normal.b.mu", label = "mu", value = 0)),
+                                                           column(4, numericInput("normal.b.sigma", label = "s", value = 1)),
+                                                           column(4, numericInput("normal.b.sample", label = "muestra", value = 5))
+                                          ),
+                                          conditionalPanel(condition = "input.selectDistributionB == 2", #lognormal
+                                                           column(4, numericInput("lognormal.b.mu", label = "mu", value = 0)),
+                                                           column(4, numericInput("lognormal.b.sigma", label = "s", value = 1)),
+                                                           column(4, numericInput("lognormal.b.sample", label = "muestra", value = 5))
+                                          ),
+                                          conditionalPanel(condition = "input.selectDistributionB == 3", #Exponencial
+                                                           column(4, numericInput("exponencial.b.lambda", label = "lambda", value = 5)),
+                                                           column(4, numericInput("exponencial.b.sample", label = "muestra", value = 5))
+                                          ),
+                                          conditionalPanel(condition = "input.selectDistributionB == 4", #Chi-Cuadrado
+                                                           column(4, numericInput("chi2.b.df", label = "df", value = 5)),
+                                                           column(4, numericInput("chi2.b.sample", label = "muestra", value = 5))
+                                          ),
+                                          conditionalPanel(condition = "input.selectDistributionB == 5", #Binomail
+                                                           column(4, numericInput("binomial.b.n", label = "n", value = 5)),
+                                                           column(4, numericInput("binomial.b.p", label = "p", value = 0.8)),
+                                                           column(4, numericInput("binomial.b.sample", label = "muestra", value = 5))
                                           )
                                  ),
                                  tabPanel(title = "Grupo A",
                                           selectInput("selectDistributionA", label = NULL, 
                                                       choices = list("Normal" = 1, "Log Normal" = 2,
-                                                                     "Exponencial" = 3), selected = 1),
+                                                                     "Exponencial" = 3, "Chi-Cuadrada" = 4, "Binomial" = 5), selected = 1),
                                           
                                           conditionalPanel(condition = "input.selectDistributionA == 1",
-                                                           
-                                                           column(4,
-                                                                  numericInput("normal.a.mu", 
-                                                                               label = "mu", 
-                                                                               value = 0)
-                                                           ),
-                                                           column(4,
-                                                                  numericInput("normal.a.sigma", 
-                                                                               label = "s", 
-                                                                               value = 1)
-                                                           ),
-                                                           column(4,
-                                                                  numericInput("normal.a.sample", 
-                                                                               label = "n", 
-                                                                               value = 10)
-                                                           )
-                                                           
+                                                           column(4, numericInput("normal.a.mu", label = "mu", value = 0)),
+                                                           column(4, numericInput("normal.a.sigma", label = "s", value = 1)),
+                                                           column(4, numericInput("normal.a.sample", label = "muestra", value = 10))
+                                          ),
+                                          
+                                          conditionalPanel(condition = "input.selectDistributionA == 2",
+                                                           column(4, numericInput("lognormal.a.mu", label = "mu", value = 0)),
+                                                           column(4, numericInput("lognormal.a.sigma", label = "s", value = 1)),
+                                                           column(4, numericInput("lognormal.a.sample", label = "muestra", value = 10))
+                                          ),
+                                          conditionalPanel(condition = "input.selectDistributionA == 3", #Exponencial
+                                                           column(4, numericInput("exponencial.a.lambda", label = "lambda", value = 5)),
+                                                           column(4, numericInput("exponencial.a.sample", label = "muestra", value = 10))
+                                          ),
+                                          conditionalPanel(condition = "input.selectDistributionA == 4", #Chi-Cuadrado
+                                                           column(4, numericInput("chi2.a.df", label = "df", value = 5)),
+                                                           column(4, numericInput("chi2.a.sample", label = "muestra", value = 10))
+                                          ),
+                                          conditionalPanel(condition = "input.selectDistributionA == 5", #Binomail
+                                                           column(4, numericInput("binomial.a.n", label = "n", value = 5)),
+                                                           column(4, numericInput("binomial.a.p", label = "p", value = 0.8)),
+                                                           column(4, numericInput("binomial.a.sample", label = "muestra", value = 10))
                                           )
                                  )
                      )),
@@ -110,8 +119,11 @@ simulador.box <- fluidPage(
                     helpText("Seleccione el tipo de permutacion deseada"),
                     
                     conditionalPanel(condition = "input.permStyle == 'Exacta'",
-                        actionButton("btnPermutar", "Permutar", width = "50%",
-                                      icon("exchange"), style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
+                        actionButton("btnPermutar", "Permutar Paso", width = "40%",
+                                      icon("exchange"), style="color: #fff; background-color: #337ab7; border-color: #2e6da4"),
+                        
+                        actionButton("btnPermutarTodos", "Permutar Todos", width = "40%",
+                                     icon("exchange"), style="color: #fff; background-color: #337ab7; border-color: #2e6da4")
                     ),
                     
                     conditionalPanel(condition = "input.permStyle == 'Aproximada'",

@@ -25,6 +25,9 @@ output$ttest <- renderUI({
 })
 
 vecTodos <- eventReactive(input$btnCalcularProm, {
+    shinyjs::enable("btnPermutar")
+    shinyjs::enable("btnPermutarTodos")
+    shinyjs::enable("btnPermutar2") 
     c(vecTratamiento(), vecControl())
 })
 
@@ -56,15 +59,11 @@ todas <- eventReactive(input$btnCalcularProm, {
 #varControlMean <- c(23, 33, 40)
 #todos <- c(varTratamientoMean, varControlMean)
 
-vecTratamiento <- eventReactive(input$btnCalcularProm, {
-    #print("boton1")
-    shinyjs::enable("btnPermutar")
-    shinyjs::enable("btnPermutarTodos")
-    shinyjs::enable("btnPermutar2") 
+vecTratamiento <- eventReactive(input$btnGenerar, {
     as.numeric(unlist(strsplit(input$txtTratamiento, split="\n")))
 })
 
-vecControl <- eventReactive(input$btnCalcularProm, {
+vecControl <- eventReactive(input$btnGenerar, {
     as.numeric(unlist(strsplit(input$txtControl, split="\n")))
 })
 
@@ -91,7 +90,7 @@ observeEvent(input$btnGenerar, {
                aValues <- round(rchisq(n = input$chi2.a.sample, df = input$chi2.a.df), 2)
            },
            "5"={
-               aValues <- round(rbinom(size = input$binomial.a.sample, n = input$binomial.a.n, prob = input$binomial.a.p), 2)
+               aValues <- round(rbinom(size = input$binomial.a.n, n = input$binomial.a.sample, prob = input$binomial.a.p), 2)
            },
            {
                print(paste0("Adefault:", input$selectDistributionA))
@@ -112,7 +111,7 @@ observeEvent(input$btnGenerar, {
                bValues <- round(rchisq(n = input$chi2.b.sample, df = input$chi2.b.df), 2)
            },
            "5"={
-               bValues <- round(rbinom(size = input$binomial.b.sample, n = input$binomial.b.n, prob = input$binomial.b.p), 2)
+               bValues <- round(rbinom(size = input$binomial.b.n, n = input$binomial.b.sample, prob = input$binomial.b.p), 2)
            },
            {
                print(paste0("Bdefault:", input$selectDistributionB))
@@ -176,15 +175,8 @@ observeEvent(input$btnPermutarTodos, {
     
     selected <- todas()
     
-    print(length(todas()))
-    
-    vDiff <- rep(0, length(todas()))
-    
-    print(paste0("totalPermu:", totalPermu()))
-    print(paste0("dim(todas()):", dim(todas())))
-    print(paste0("length(todas()):", length(todas())))
-    print(paste0("length(selected:", length(selected)))
-                 
+    vDiff <- rep(0, length(totalPermu()))
+
     for (i in 1:totalPermu()) {
         #print(paste0("i:", i))
         newga <- selected[,i]
@@ -305,6 +297,21 @@ output$MayoresPerc <- renderValueBox({
     
 })
 
+output$tpvalue <- renderValueBox({
+    ga <- vecTratamiento()
+    gb <- vecControl()
+    
+    ttest <- t.test(ga, gb)
+    
+    #HTML(paste0("<b>t.test p-value: </b>", ttest$p.value, "<br/><b>t statistc: </b>", ttest$statistic))
+    
+    valueBox(paste0(round(ttest$p.value*100, 2), "%") , 
+             "p-value (t-test)", 
+             icon = icon("percent"), 
+             color = "yellow")
+    
+})
+
 
 output$plotDensity <- renderPlot({
     
@@ -318,6 +325,20 @@ output$plotDensity <- renderPlot({
          main="Densidad de todas las diferencias")
     abline(v=c(1, -1)*abs(mean(vecTratamiento()) - mean(vecControl())), col="red", lwd=2, lty=1:2)
 })
+
+output$plotBoxplot <- renderPlotly({
+    #input$btnGenerar
+    
+    grupoA <- as.numeric(unlist(strsplit(input$txtTratamiento, split="\n")))
+    grupoB <- as.numeric(unlist(strsplit(input$txtControl, split="\n")))
+
+    data <- data.frame(values = c(grupoA, grupoB),
+                     vars = rep(c("Grupo A","Grupo B"), times = c(length(grupoA),length(grupoB))))
+    
+    plot_ly(data, x = ~vars, y = ~values, type = "box", color = ~vars)
+    
+})
+
 
 output$plotHistogram <- renderPlotly({
     input$btnPermutar

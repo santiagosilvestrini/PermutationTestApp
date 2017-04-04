@@ -154,3 +154,32 @@ for (i in 1:5){ #:(length(perms))) {
     print(b)
 }
 
+
+data <- data.frame(GrupoA = c(970.09, 384, 1495), GrupoB = c(970.09, 384, 1495))
+plot_ly(data, x = ~variable, y = ~value, type = "box", color = ~variable)
+
+grupoA = c(1, 2, 3)
+grupoB = c(4, 5, 2, 2)
+data <- data.frame(GrupoA = grupoA, GrupoB = grupoB)
+
+data <- array(grupoA, grupoB)
+
+reshape::melt(data, varnames=c("GrupoA","GrupoB"))
+
+data <- reshape2::melt(data)
+print(data)
+##plot_ly(y = data, type = "box")
+plot_ly( data=data, type = "box", group = "variable", y="value")
+
+df <- data.frame(values = c(grupoB, grupoB),
+                 vars = rep(c("grupoB","grupoB"), times = c(10,7)))
+
+df <- data.frame(values = c(grupoA, grupoB),
+                 vars = rep(c("Col1","Col2"), times = c(3,4)))
+length(grupoA)
+
+p <- ggplot(data, aes(x=variable, y=value)) +
+    stat_boxplot(geom ='errorbar') + 
+    geom_boxplot()
+ggplotly(p) # %>% 
+# config(d

@@ -1,3 +1,4 @@
 *.Rhistory
 *.pper
 .Rproj.user/
+.Rproj.user

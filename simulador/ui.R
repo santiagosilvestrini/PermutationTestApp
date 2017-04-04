@@ -13,17 +13,17 @@ simulador.box <- fluidPage(
                                                                      "Exponencial" = 3, "Chi-Cuadrada" = 4, "Binomial" = 5), selected = 1),
                                           
                                           conditionalPanel(condition = "input.selectDistributionB == 1", #normal
-                                                           column(4, numericInput("normal.b.mu", label = "mu", value = 0)),
-                                                           column(4, numericInput("normal.b.sigma", label = "s", value = 1)),
+                                                           column(4, numericInput("normal.b.mu", label = "µ2", value = 0)),
+                                                           column(4, numericInput("normal.b.sigma", label = HTML("&sigma;2"), value = 1)),
                                                            column(4, numericInput("normal.b.sample", label = "muestra", value = 5))
                                           ),
                                           conditionalPanel(condition = "input.selectDistributionB == 2", #lognormal
-                                                           column(4, numericInput("lognormal.b.mu", label = "mu", value = 0)),
-                                                           column(4, numericInput("lognormal.b.sigma", label = "s", value = 1)),
+                                                           column(4, numericInput("lognormal.b.mu", label = HTML("&mu;2"), value = 0)),
+                                                           column(4, numericInput("lognormal.b.sigma", label = HTML("&sigma;2"), value = 1)),
                                                            column(4, numericInput("lognormal.b.sample", label = "muestra", value = 5))
                                           ),
                                           conditionalPanel(condition = "input.selectDistributionB == 3", #Exponencial
-                                                           column(4, numericInput("exponencial.b.lambda", label = "lambda", value = 5)),
+                                                           column(4, numericInput("exponencial.b.lambda", label = HTML("&lambda;2"), value = 5)),
                                                            column(4, numericInput("exponencial.b.sample", label = "muestra", value = 5))
                                           ),
                                           conditionalPanel(condition = "input.selectDistributionB == 4", #Chi-Cuadrado
@@ -42,18 +42,18 @@ simulador.box <- fluidPage(
                                                                      "Exponencial" = 3, "Chi-Cuadrada" = 4, "Binomial" = 5), selected = 1),
                                           
                                           conditionalPanel(condition = "input.selectDistributionA == 1",
-                                                           column(4, numericInput("normal.a.mu", label = "mu", value = 0)),
-                                                           column(4, numericInput("normal.a.sigma", label = "s", value = 1)),
+                                                           column(4, numericInput("normal.a.mu", label = HTML("&mu;1"), value = 0)),
+                                                           column(4, numericInput("normal.a.sigma", label = HTML("&sigma;1"), value = 1)),
                                                            column(4, numericInput("normal.a.sample", label = "muestra", value = 10))
                                           ),
                                           
                                           conditionalPanel(condition = "input.selectDistributionA == 2",
-                                                           column(4, numericInput("lognormal.a.mu", label = "mu", value = 0)),
-                                                           column(4, numericInput("lognormal.a.sigma", label = "s", value = 1)),
+                                                           column(4, numericInput("lognormal.a.mu", label = HTML("&mu;1"), value = 0)),
+                                                           column(4, numericInput("lognormal.a.sigma", label = HTML("&sigma;1"), value = 1)),
                                                            column(4, numericInput("lognormal.a.sample", label = "muestra", value = 10))
                                           ),
                                           conditionalPanel(condition = "input.selectDistributionA == 3", #Exponencial
-                                                           column(4, numericInput("exponencial.a.lambda", label = "lambda", value = 5)),
+                                                           column(4, numericInput("exponencial.a.lambda", label = HTML("&lambda;1"), value = 5)),
                                                            column(4, numericInput("exponencial.a.sample", label = "muestra", value = 10))
                                           ),
                                           conditionalPanel(condition = "input.selectDistributionA == 4", #Chi-Cuadrado
@@ -195,15 +195,18 @@ simulador.box <- fluidPage(
                         )
                    ),
                    
-                   box( width = NULL, solidHeader = FALSE,
-                        valueBoxOutput("Observado"),
-                        valueBoxOutput("MayoresCount"),
-                        valueBoxOutput("MayoresPerc")
+                   #box( width = NULL, solidHeader = FALSE,
+                    fluidRow(
+                           column(3, valueBoxOutput("Observado") ),
+                        column(3, valueBoxOutput("MayoresCount") ),
+                        column(3, valueBoxOutput("MayoresPerc") ),
+                        column(3, valueBoxOutput("tpvalue") )
+                        
                    ),
                    tabBox( title = "Graficos", id = "tabCharts", width = NULL, side = "right",
-                           selected = "Histograma",
-                           tabPanel(title = "Densidad",
-                                    plotOutput("plotDensity")
+                           selected = "Boxplot",
+                           tabPanel(title = "Boxplot",
+                                    plotlyOutput("plotBoxplot")
                            ),
                            tabPanel(title = "Histograma",
                                     plotlyOutput("plotHistogram"),

@@ -8,3 +8,6 @@ if(interactive()) {
 
 ##  o para deployar la app
 ## shinyapps::deployApp(appName="CienciasDeDatos-PermutationTests", account="myaccount")
+## library(rsconnect)
+## rsconnect::setAccountInfo(name='santi', token='', secret='')
+## deployApp()

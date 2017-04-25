@@ -1,16 +1,20 @@
 server <- function(input, output, session) {
     session$onSessionEnded(stopApp)
     
-    ## SIMILADOR --------------------------------------------------------------------
+    ## SIMULADOR --------------------------------------------------------------------
     source("simulador/server.R", local=TRUE)
     
     
-    ## UPLOAD --------------------------------------------------------------------
-    #source("fileUpload/server.R", local=TRUE)
+    ## INTRO --------------------------------------------------------------------
+    source("intro/server.R", local=TRUE)
     
-    ## CLUSTER --------------------------------------------------------------------
-    #source("clustering/server.R", local=TRUE)
     
-    ## RANKING --------------------------------------------------------------------
-    #source("ranking/server.R", local=TRUE)
+    ## regresion --------------------------------------------------------------------
+    source("regresion/server.R", local=TRUE)
+    
+    ## REFERENCIAS --------------------------------------------------------------------
+    source("anova/server.R", local=TRUE)
+    
+    ## REFERENCIAS --------------------------------------------------------------------
+    source("refe/server.R", local=TRUE)
 }

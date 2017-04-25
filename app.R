@@ -1,4 +1,4 @@
-## Run locally if in interactive session (for testing)
+## para que corrar local:
 if(interactive()) {
     source("global.R")
     source("ui.R")
@@ -6,5 +6,5 @@ if(interactive()) {
     shinyApp(ui, server)
 }
 
-## or Deploy App
+##  o para deployar la app
 ## shinyapps::deployApp(appName="CienciasDeDatos-PermutationTests", account="myaccount")

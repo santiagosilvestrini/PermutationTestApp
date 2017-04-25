@@ -38,6 +38,11 @@ sidebar <- dashboardSidebar(
             icon = icon("area-chart", class = "fa-lg")
         ),
         menuItem(
+            "Conclusiones",
+            tabName = "conclu",
+            icon = icon("bullseye", class = "fa-lg")
+        ),
+        menuItem(
             "Referencias",
             tabName = "refe",
             icon = icon("leanpub", class = "fa-lg")
@@ -45,7 +50,18 @@ sidebar <- dashboardSidebar(
     ),
     conditionalPanel(
         condition = "input.menuBase == 'simulador'",
-        selectInput("period", "Period:", 
-                    choices = list("Years" = 1, "Months" = 2))
+        
+        tags$hr(), 
+        radioButtons("seedchoice", label="Tipo de Semilla:",
+                     choices=c("Aleatoria" = "random", "Fija" = "fixed"),
+                     inline=TRUE),
+        
+        numericInput("seed", 
+                     label = "Valor Semilla:", 
+                     value = 1234, width = "80%"),
+        
+        sliderInput("nivelSignificacion", label = HTML("<h4>Nivel de Significacion &alpha;"), 
+                    min = 0.01, 
+                    max = 0.20, value = 0.05)
     )
 )

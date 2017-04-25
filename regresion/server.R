@@ -1,6 +1,4 @@
-regresion.box <- fluidPage(
-        useShinyjs(),
-        fluidRow(
-			"Codigo Regresion Linear"
-		)
-)
+# Regresion
+output$markdownRegre <- renderUI({
+    withMathJax(HTML(markdown::markdownToHTML(knit('regresion/linearRegrPerm.Rmd', quiet = TRUE))))
+})

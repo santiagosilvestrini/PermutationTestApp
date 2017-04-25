@@ -1,0 +1,142 @@
+---
+title: "ANOVA"
+author: "Manuel Mancilla"
+date: "April 20, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#cam1 <- "C:/Users/santiago.silvestrini/OneDrive/Github/PermutationTestApp/anova/"
+cam1 <- ""
+arch1 <- "consumo_hormigas.txt"
+camarch1 <- paste(cam1,arch1,sep="")
+datos1 <- read.table(camarch1, header=T)
+datos1$mes <- factor(datos1$mes, levels=c("junio","julio","agosto","septiembre"))
+col_ptos1 <- c("blue","red","darkgreen","magenta")
+```
+
+# Test permutacionales en ANOVA univariado a un criterio de clasificación
+
+## Breve introducción:
+
+Al igual que la t de Student, se requiere que cada uno de los grupos a comparar tenga distribuciones normales, o lo que es más exacto, que lo sean sus residuos. Los residuos son las diferencias entre cada valor y la media de su grupo. Además debemos estudiar la dispersión o varianzas de los grupos, es decir estudiar su homogeneidad. Cuando mayor sean los tamaños de los grupos, menos importante es asegurar estos dos supuestos, ya que el ANOVA suele ser una técnica bastante “robusta” comportándose bien respecto a transgresiones de la normalidad. No obstante, si tenemos grupos de tamaño inferior a 30, es importante estudiar la normalidad de los residuos para ver la conveniencia o no de utilizar el análisis de la varianza. Si no fuera posible utilizar directamente el ANOVA, podemos recurrir al uso de pruebas no paramétricas como la de Kruskal-Wallis o test permutacionales.
+
+## Ejemplo:
+
+Se desea evaluar si hay diferencias mes a mes con respecto al consumo de hormigas (principal alimento)  de 24 lagartos de cuernos cortos _(Phrynosoma douglassi brevirostre)_ de muestras obtenidas a lo largo de cuatro meses de 1980. Por estudios previos se sabe que el consumo de hormigas se correlaciona con el volumen del estómago y el consumo de hormigas se puede expresar como miligramos de biomasa seca de presa. Los lagartos fueron capturados a mano en tres localidades separadas de Alberta, Canadá. El tiempo de recolección de las muestras no será tenido en cuenta y el análisis se centrará en si hay o no diferencias de consumo de hormigas entre meses.
+
+Fuente: [The diet of the eastern short-horned lizard (Phrynosoma douglassi brevirostre) in Alberta and its relationship to sexual size dimorphism](http://www.nrcresearchpress.com/doi/abs/10.1139/z84-066) - GL Powell, AP Russell - Canadian Journal of Zoology, 1984.
+ 
+![](tabla_consumo.jpg) 
+
+```{r echo = FALSE, results = "asis"}
+library(knitr)
+
+stripchart(conte~mes, main = "Consumo de hormigas", sub="mes", vertical = TRUE,
+            ylab="mg de biomasa seca", pch=19, col=col_ptos1,
+            cex=1.2, data = datos1)
+```
+
+
+## Supuestos para el ANOVA: 
+
+* Independencia de las observaciones
+* Homogeneidad de varianzas
+
+```{r bartlett-test}
+bartlett.test(conte~mes, data=datos1)
+```
+
+El p-valor < $0.05$ luego **rechazamos la hipótesis nula**; los grupos no son homocedásticos.
+
+* Normalidad: 
+
+```{r shapiro-test}
+shapiro.test(datos1$conte)
+```
+
+En este caso, el p-valor < $0.05$ luego la distribución de los datos **no es normal**.
+
+## ANOVA:
+
+```{r anova-test}
+aov.ex1 <- aov(conte~mes, data=datos1)
+summary(aov.ex1)
+```
+
+El valor de $F_{3,20}$ tiene un valor p asociado de $0.211$. Por tanto **no rechazamos la hipótesis nula** y concluimos que no existe medias distintas en los grupos con un nivel de significación de 5%.
+
+## Test permutacional:
+
+### Intercambiabilidad
+
+Para estudios observacionales, el experimentador no asigna tratamientos a las unidades estudiadas ya que una clasificación de las unidades ya existen. Sobre dicha clasificación se desean realizar test de hipótesis. En tales situaciones se debe considerar la noción conceptual de intercambibilidad entre las unidades bajo $H_0$. La clasificación de las unidades existe en la naturaleza sin que se tenga control experimental sobre ellas. Por esto, para estudios observacionales, debemos asumir la intercambibilidad bajo $H_0$ _(Anderson, 2000)_.
+
+### Número total de permutaciones
+
+El número posible de permutaciones de $g$ grupos es el número de combinaciones de observaciones para el $Grupo 1$ $\frac{n!}{n_1! (n - n_1!))}$ multiplicado por el número de combinaciones de observaciones para el $Grupo 2$ cuando las observaciones para el $Grupo 1$ han sido determinadas $\frac{(n-n_1)!}{n_2! (n-n_1-n_2)!}$, multiplicado por el número de combinaciones de observaciones para el $Grupo 2$ cuando las observaciones para el $Grupo 1$ y $Grupo 2$ han sido determinadas, y así en lo sucesivo. Lo cual da $\frac{n!}{n_1!n_2!...n_g!}$ _(Clarke, 1993)_. Y para el ejemplo en estudio, hay $\frac{24!}{3!5!10!6!} \sim 3.3x10^{11}$ posibilidades siendo una completa enumeración poco practicable. Se procede a calcular un valor $p$ tomando un amplio subconjunto de todas las posibles permutaciones para crear la distribución _(Hope, 1968)_.
+
+En general, el tamaño muestral para una aplicación en particular dependerá de cuan cerca este el valor $p$ del nivel de significación $\alpha$. Por ejemplo, si el valor $p$ está lejos del valor $\alpha$, luego muy pocas permutaciones serán necesarias para evidenciar que p > $\alpha$???, mientras que si el valor $p$ está próximo al nivel de significación, entonces serán necesarias una mayor cantidad de permutaciones. Para el ejemplo, se realizaron $6000$ permutaciones y se calcularon los valores del estadístico $F^\Pi$ y los valores $p$ obtenidos _(Linton, 1989)_.
+
+Ejemplo de 9 permutaciones posibles:
+
+```{r permu-test}
+apermutar <- datos1$conte
+tam1 <- length(apermutar)
+
+layout(matrix(1:9,3,3))
+for(i in 1:9){
+    permuta_temp <- sample(apermutar, tam1, replace = FALSE, prob = NULL)
+    stripchart(permuta_temp~datos1$mes, main = "Consumo de hormigas", sub="mes", vertical = TRUE,
+            ylab="mg de biomasa seca", pch=19, col=col_ptos1,
+            cex=1.2, data = datos1)
+}
+```
+
+Distribución de frecuencias obtenida para $F^\Pi$:
+
+```{r f-test}
+aov.ex1sum <- summary(aov.ex1)
+aov.Fval_muestra <- aov.ex1sum[[1]][[4]][[1]]
+aov.pval_muestra <- aov.ex1sum[[1]][[5]][[1]]
+
+Nper <- 5999
+guarda_pval <- rep(NA,Nper+1)
+guarda_Fval <- rep(NA,Nper+1)
+
+apermutar <- datos1$conte
+tam1 <- length(apermutar)
+
+guarda_pval[Nper+1] <- aov.pval_muestra
+guarda_Fval[Nper+1] <- aov.Fval_muestra
+for(i in 1:Nper){
+    permuta_temp <- sample(apermutar, tam1, replace = FALSE, prob = NULL)
+    aov.per <- aov(permuta_temp~datos1$mes)
+    aov.sum <- summary(aov.per)
+
+    guarda_Fval[i] <- aov.sum[[1]][[4]][[1]]
+    guarda_pval[i] <- aov.sum[[1]][[5]][[1]]
+}
+
+#Valor-p asociado con la H0: p = (# Fp >= Fobs)/(# (Fp+Fobs))
+#Fp: est. F en las permutaciones
+#Fobs: est. F en los valores observados
+Fobs <- guarda_Fval[Nper+1]
+mayoroigual <- (guarda_Fval >= Fobs)
+temp1 <- rep(1,Nper+1)
+numerador <- (sum(temp1[mayoroigual]) - 1)
+mivalorp <- numerador/(Nper+1)
+```
+
+$$P = \frac{(cant. de F^\Pi \geq F)}{(total cant. de F^\Pi)}$$
+    
+```{r f-histo}
+hist(guarda_Fval, main="Distribución de frecuencia de los valores F obtenidos",
+       xlab="F", ylab="frecuencia",freq = T)
+abline(v=guarda_Fval[Nper+1], lt=2, col="blue")
+abline(v=guarda_Fval[Nper+1], lt=2, col="blue")
+```
+
+En este ejemplo los valores $p$ obtenidos usando el test t y el test permutacional no son muy diferentes. Sin embargo, **el uso del test t sería sin duda cuestinable** si el resultado del test permutacional no fuera conocido.

@@ -1,0 +1,229 @@
+---
+title: "Test permutacionales en Regresión Lineal"
+output: 
+  html_document: 
+    fig_caption: yes
+    number_sections: yes
+    theme: cerulean
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Regresión Lineal Simple
+
+```{r Requisitos y funciones, include=FALSE}
+
+library("lmPerm")
+library("plotly")
+library("ggplot2")
+
+permutations <- function(n){
+  if(n==1){
+    return(matrix(1))
+  } else {
+    sp <- permutations(n-1)
+    p <- nrow(sp)
+    A <- matrix(nrow=n*p,ncol=n)
+    for(i in 1:n){
+      A[(i-1)*p+1:p,] <- cbind(i,sp+(sp>=i))
+    }
+    return(A)
+  }
+}
+
+```
+
+
+```{r, include=FALSE}
+
+data <- read.csv("unemployment.csv", sep="")
+n <- nrow(data)
+
+```
+
+Contamos con la siguiente muestra aleatoria de tamaño $n$ = `r n`
+
+```{r Muestra aleatoria, echo=FALSE}
+(data)
+```
+
+en donde:
+
+* $X$ = tasa desempleo nacional para masculinos adultos
+* $Y$ = tasa desempleo nacional para femeninos adultos
+
+
+Referencia: [Statistical Abstract of the United States](http://college.cengage.com/mathematics/brase/understandable_statistics/7e/students/datasets/slr/frames/frame.html)
+
+Deseamos probar la hipótesis nula de que no hay relacion lineal entre X e Y. Es decir, $$H_0: \beta_1=0$$. Para ello construiremos un modelo cuya ecuación nos queda $$Y = \beta_0 + \beta_1 X + \epsilon$$
+
+
+## Enfoque paramétrico clásico
+
+Ajustamos el modelo y obtenemos el resumen y curva ajustada sobre las observaciones
+
+```{r, echo=FALSE}
+( msumm <- summary(lm(data$Y~data$X)) )
+# plot(data, xlab="X", ylab="Y", main="Curva ajustada")
+#par(new=TRUE)
+#curve( coef(msumm)["(Intercept)",1] + coef(msumm)["data$X",1]*x, col="red", xlab ="", ylab="" )
+
+rsqobs <- msumm$r.squared
+
+qplot(x = data$X, y = data$Y, data = data, main="Curva ajustada", xlab="X", ylab="Y") + 
+    geom_abline( intercept = msumm$coefficients[1,1], slope = msumm$coefficients[2,1], col = "red" )
+
+
+
+```
+
+Bajo los supuestos:
+
+* Errores iid Normal bajo $H_0$
+* Varianza del error constante
+* Errores no correlacionados
+
+Podemos rechazar $H_0$ para un nivel de significacia de $0.001$ (p-value = `r msumm$coefficients[2,4]`). 
+
+## Enfoque no-paramétrico con permutaciones
+
+Si asumimos $H_0$ cierta, los valores de $Y$ podrían haberse observado para cualquier $X$, por lo tanto, podemos intercambiar los valores de $Y$ para valores fijos de $X$. En este caso, el modelo nos queda $$Y = \beta_0 + \epsilon$$
+
+Un estadístico de prueba apropiado es el cuadrado del coeficiente de correlacion $r^2$. Para realizar un test exacto, podemos calcular dicho estadístico para todas permutaciones posibles de $Y$ dejando los $X$ fijos $(r^2)^{\pi}$ . Es decir, tendremos $n!$ = `r factorial(n)` permutaciones posibles y nuestro $p$-value será la proporcion de permutacions que superen al valor $r^2$ = `r rsqobs` observado en nuestro set de datos original.
+
+Generamos todas las permutaciones posibles de todos los valores de la variable de respuesta $Y$
+
+```{r, echo=FALSE}
+
+perm <- matrix(data[permutations(n),2],ncol=n) 
+
+head(perm, n=35)
+
+p <- nrow(perm)
+
+```
+
+Combinamos todos los valores permutados de $Y$ con los valores de $X$, los cuales permanecen fijos, y para cada uno de ellos calculamos $r^2$. De esta manera nos queda calculado $(r^2)^{\pi}$.
+
+```{r, echo=TRUE}
+rsqPerm <- matrix(data = rep(1:p), nrow = p, byrow = TRUE )
+
+for (i in 1:p ) {
+  currperm <- cbind(perm[i,],data$X)
+  rsqPerm[i] <- summary(lm(currperm[,1]~currperm[,2]))$r.squared
+}
+
+```
+
+Exloramos el estadístico
+
+```{r, echo=FALSE}
+
+#boxplot(rsqPerm)
+#summary(rsqPerm)
+#hist(rsqPerm, main = "Histograma del estadistico" )
+#abline(v=rsqobs, col="red")
+
+qplot(rsqPerm, geom="histogram", main = "Histograma del estadistico") + geom_vline(xintercept=rsqobs, color = "red" )
+
+
+```
+
+Calculamos el p-value a través de la proporcion de valores mayores o iguales al observado `r length(rsqPerm[rsqPerm >= rsqobs]) / p * 100`%. Concluimos que podemos rechazar $H_0$, al igual que en el enfoque paramétrico.
+
+Comparamos con Pr(Exact) obtenido con el método lmp del paquete lmPerm.
+
+```{r}
+summary(lmp(data$Y~data$X))
+```
+
+
+# Regresion lineal multiple
+
+Sea $Y$ un variable de respuesta de un fenómeno biológico o ecológico, $X$ y $Z$ dos variables independientes explicativas de $Y$.
+
+A modo de ejemplo, definímos estas variables como
+
+* $Y$ = el crecimiento de bivalvo (especie de molusco)
+* $X$ = temperatura
+* $Z$ = materia orgánica particula (MOP)
+
+Medimos el crecimiento junto a $n$ combinaciones distinas de temperatura y MOP, ya se en un estudio experimental u observacinal. El modelo lineal resultante nos queda 
+
+$$Y = \beta_0 + \beta_1 X + \beta_2 Z + \epsilon$$
+
+Se asume que las variables $X$ y $Z$ fueron medidas sin error. Para realizar un test sobre la relación de $Y$ versus $X$ y $Z$, definimos la hótesis nula 
+$$H_0: \beta_1=\beta_2=0$$
+
+Un estadístico de prueba apropiado es el coeficiente de determinación $R^2$ [Sokal and Rohlf 1981; Neter et al. 1996]
+
+Para hacer este test se requiere considerar cuidadosamente que es **intercambiable** bajo la hipótesis nula. Si $H_0$ es verdadera, el modelo nos queda $$Y = \beta_0 + \epsilon$$
+
+Entonces, si asumimos que los errores son iid, las observaciones de $Y$ son intercambiables bajo $H_0$. Es decir, que los valores observados de $Y$, al no tener relación lineal con $X$ y $Z$ en simultáneo, los valores pudieron haber sido obtenidos en cualquier orden para los pares de valores de $X$ y $Z$.
+
+Un $p$**-value** exacto para el test de regresión lineal múltiple puede obtenerse permutando $Y$ dejando $X$ y $Z$ fijos y recalculando $R^2$ en cada permutacion, a este estadístico lo llamaremos $(R^2)^{\pi}$. Al igual que en la regresión lineal simple, el $p$-value será la proporción de permutaciones que supere al ${R^2}$ observado.
+
+
+# Regresión parcial
+
+Cuando tenemos un modelo con mas de una variable independiente, usualmente nos interesa conocer algo más específico que la regresión múltiple. Volviendo al ejemplo anterior, si deseamos estudiar la relación entre el crecimiento de los bivalvos ($Y$) y el MOP ($Z$) para cualquier efecto de temperatura ($X$), podemos plantear una hipótesis nula $$H_0: \beta_2=0$$
+
+Rechazando esta hipótesis nula tendríamos evidencia de que el MOP **explica una porción significativa de la variabilidad** del crecimiento independientemente de la temperatura.
+
+Un **estadístico de prueba** apropiado para la relación entre $Y$ y $Z$ dado $X$, es el coeficiente cuadrado de correlación parcial $$r^{2}_{YZ,X}=\frac{(r_{YZ}-r_{XZ}r_{YX})^2}{(1-r_{XZ})^2(1-r_{YX})^2}$$ en donde los $r_{AB}$ son los coeficientes de correlación entre las variables.
+
+Si consideramos $H_0$ cierta, el **modelo se reduce** a $$Y = \beta_0 + \beta_2 Z + \epsilon$$
+
+Bajo el supuesto de que los errores son iid, lo que es intercambeable bajo $H_0$ no son las observaciones, sino que los errores una vez removido el efecto de $X$, es decir $$(Y- \beta_0 - \beta_1 X)$$ son las unidades que deben ser permutadas.
+
+El problema es que los parametros $\beta_0$ y $\beta_1$ son desconocidos y por lo tanto no podremos realizar un test permutacional **exacto** [Anderson and Robinson 2001].
+
+Para resolver esta situación, se puede recurrir a algunos de los métodos de permutaciones aproximadas, a saber:
+
+* Permutaciones de los residuos bajo el modelo reducido [Freedman & Lane 1983]
+* Permutaciones de las observaciones [Kennedy & Cade 1996; Anderson & Legendre 1999]
+* Permutaciones de los residuos bajo el modelo completo [Braak 1992]
+
+## Permutaciones de los residuos bajo el modelo reducido
+
+En este método, se estiman los parametros $\beta_0$ y $\beta_1$ ajustando un modelo de regresion lineal simple. 
+
+Los residuos $R_{Y,X}=(Y- b_0 - b_1 X)$ aproximan a los errores $\epsilon$ que son **intercambiables** cuando $H_0$ es cierta.
+
+Para valores fijos de $Z$ intercambiamos los residuos y calculamos para cada una de las $n!$ permutaciones posibles el estadistico de prueba $(r^{2}_{YZ,X})^{\pi}$ y calculamos el $p$-value como la proporcion de los valores que superen al $r^{2}_{YZ,X}$ observado.
+
+Este test no es exacto, pero si lo es asintóticamente exacto lo que implica que el error de Tipo I se tiende a al nivel de significancia ($\alpha$) elegido a mendida que crece $n$.
+
+Por último, vemos que para este método, es necesaria la suposición de que exista regresion lineal simple entre $Y$ y $X$.
+
+## Permutaciones de las observaciones
+
+Este método, permuta las observaciones originales $Y$ manteniendo fijo los valores de $X$ y $Z$.
+
+El estadístico de prueba es el coeficiente de correlacion parcial y se calcula para cada una de las $n!$ permutaciones.
+
+Un requisito esencial para este método, es que la distribución de $Y$ debe ser similar a la distribucion del error $\epsilon$ bajo $H_0$ con un efecto fijo de $X$. Esto en general no es cierto si hay valores extremos en $X$.
+
+## Permutaciones de los residuos bajo el modelo completo
+
+Similiar al primer método, este método permuta los residuos pero del modelo completo. Los parámetros son estimados ajustando un modelo de regresión múltiple y el residuo $R_{Y,XZ}=(Y- b_0 - b_1 X - b_2 Z)$ aproxima al error del modelo completo. 
+
+Permutando los residuos y calculando los coeficiente de correlación construimos el estadístico de prueba $(r^{2}_{Y,XZ})^{\pi}$ para cada una de las $n!$ posibilidades. Tanto $X$ y $Z$ permanecen fijos.
+
+En este método requiere que haya regresión multiple que el error del modelo completo tengo una distribucion similar al error del modelo reducido.
+
+## ¿Que método utilizar?
+
+En general, el mejor método es el de Freedman y Lane. Es el más cercano a lo que conceptualmente es un test exacto [Anderson and Robinson 2001]. 
+
+Si el tamaño de la muestra es pequeña ($n<10$, es mejor utilizar el segundo método [Anderson y Legendre 1999]. 
+
+El tercer método tiene la ventaja de que computacionalmente requiere de menor esfuerzo ya que calcula solo los residuos del modelo completo. En cambio, en el primer método se deberán calcular los residuos para cada uno de los modelos reducidos que se prueben. Los resultados de los métodos 1 y 3 son comparables.
+
+
+
+
+

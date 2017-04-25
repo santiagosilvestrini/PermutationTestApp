@@ -1,0 +1,71 @@
+p { font-size: 90%; }
+
+li { font-size: 90%; }
+
+body {  max-width:none !important; 
+        line-height:1em !important;
+        margin:0 !important;
+        padding:0 !important;}
+
+#markdown p {
+    font-size: 14px;
+    line-height:20px; 
+    padding:1em;
+}
+
+#CheatSheet p {
+    font-size: 14px;
+}
+
+#markdownAnova p {
+    font-size: 18px;
+    line-height:20px; 
+    padding:5px;
+}
+
+
+#markdownRegre p {
+    font-size: 18px;
+    line-height:20px; 
+    padding:5px;
+}
+
+#markdownAnova h2 {
+    color:#069;
+}
+
+#markdownRegre h2 {
+    color:#069;
+}
+
+#markdownAnova h1 {
+    color:#069;
+}
+
+#markdownAnova h3 {
+    color:#069;
+}
+
+
+#markdownRegre h1 {
+    color:#069;
+}
+
+#markdownAnova,
+#markdownRegre li {
+    font-size: 18px;
+    line-height: 20px;
+    padding:5px;
+}
+
+.table-condensed > tbody > tr > td, .table-condensed > tbody > tr > th, .table-condensed > tfoot > tr > td, .table-condensed > tfoot > tr > th, .table-condensed > thead > tr > td, .table-condensed > thead > tr > th {
+    padding: 5px;
+}
+
+.table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+    padding: 8px;
+    line-height: 1.4285;
+    vertical-align: top;
+    border-top: 1px solid #ddd;
+}
+

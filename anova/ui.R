@@ -1,6 +1,7 @@
+# ANOVA
+
 anova.box <- fluidPage(
-        useShinyjs(),
-        fluidRow(
-			"Codigo Ejemplo Anova"
-		)
+		#div(class = "anovaDiv",
+		    withMathJax(uiOutput('markdownAnova'))
+		#)
 )

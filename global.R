@@ -1,9 +1,20 @@
+
+## For snapshots of CRAN Repositories:
 #library(checkpoint)
-#checkpoint("2017-03-31") # YYYY-MM-DD
-#packageVersion("markdown")
+#checkpoint("2017-04-10") # YYYY-MM-DD  Sys.Date() - 1
+#packageVersion("rmarkdown")
+#packageVersion("pandoc")
+#install.packages("formatR")
+ 
+
+#require(devtools)
+#install_version("rsconnect", version = "0.6", repos = "http://cran.us.r-project.org")
+#install_version("markdown", version = "1.4", repos = "http://cran.us.r-project.org")
 
 ## Clear workspace (important for debugging in interactive session)
 rm(list=ls())
+
+source("helpers/helpers.R")
 
 ## Load packages
 if (!require("pacman")) install.packages("pacman") # Administrador de Paquetes
@@ -13,19 +24,17 @@ pacman::p_load("shiny","shinydashboard",
                "HistData", ## Description The 'HistData' package provides a collection of small data sets that are interesting and important in the history of statistics 
                "mcsm", ## Monte Carlo Simulation
                "ggplot2", ## grammar of graphics
-               "plotly"
-               
+               "plotly",
+               "shinyBS",
+               "knitr", 
+               "lmPerm",
+               "coin",
+               "perm"
 )
 
 
-
-## Source
-#source('heatmap2.R') # overwrite heatmap.2 from gplots with my customized version
-
 ## Global variables - used across pages and apps
-datGlobal <- NULL
-updGlobal <- 0                          # initialize counter to 0
-
 permNum <- 0
 
-'%nin%' <- Negate('%in%')
+## Global functions and operators
+'%nin%' <- Negate('%in%') ## define NOT IN custom operator

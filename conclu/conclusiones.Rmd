@@ -1,0 +1,42 @@
+---
+title: "Conclusiones"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# ¿Qué es y para qué sirve un Test Permutacional? 
+
+Un test permutacional calcula la probabilidad de obtener un valor igual o mayor que el valor observado de un estadístico bajo alguna hipótesis nula especifica mediante el recálculo del estadístico después de reordenamientos de los datos.
+
+Sirve para testear muchas hipótesis de interés las cuales se las puede pensar  como alternativas a hipótesis nulas que indican que existen solo efectos del azar en las observaciones.
+
+# ¿En qué se basa o se fundamenta?
+
+El argumento propuesto es que **si la hipótesis nula es cierta, luego todo los  posibles ordenamientos de los datos tuvieron las mismas chances de ocurrir**. Entonces, el ordenamiento de datos observado es sólo uno de los ordenamientos igualmente probables, y el valor del estadístico obtenido debería aparecer como un valor típico dentro de la distribución permutacional del estadístico. 
+
+Si no llegara a ocurrir de esa forma (siendo significativo el valor del estadístico), luego la hipótesis nula es desacreditada en cierta extensión y, en consecuencia, la hipótesis alternativa es considerada más razonable.
+
+# ¿Sobre qué tipos de fenómenos aleatorios se aplica?
+
+Se aplica en fenómenos biológico y ecológicos, tanto para estudios observacionales y  experimentales.
+
+Para datos observacionales debemos suponer intercambiabilidad bajo la hipótesis nula y para datos experimentales la validez del procedimiento se logra mediante la asignación al azar de los tratamientos.
+
+# ¿Cuales son los pasos para su ejecución?
+
+* Se define una **hipótesis nula** y un **estadístico de prueba** apropiado
+
+* Se realizan los **reordenamientos o permutaciones asumiendo hipótesis nula cierta**. De cada uno de estos ordenamientos, se calculan el valor del estadístico de prueba.
+
+* En caso de ser computacionalmente factible calcular todos los ordenamientos posibles, podremos realizar un **test exacto**. En caso contrario, se deberá realizar un **test aproximado** tomando una muestra aleatoria de los ordenamientos posibles. 
+
+* Se calcula **p-value como la proporción de valores en la distribución permutacional iguales o mayores que el valor del estadístico calculado con los valores observados** originalmente. Este valor, es puede ser interpretado de la misma forma que en test convencionales.
+
+# ¿Cuales son sus ventajas y desventajas?
+
+Los test permutacionales **no descansan sobre supuestos tan estrictos como lo hacen los tests paramétricos**. Por lo tanto son de aplicación a mayor número de situaciones prácticas que tratan con circunstancias complejas encontradas por los biologos y ecologistas.
+
+Como desventajas, podemos decir que **las conclusiones no necesariamente son posibles de generalizar a la población de interés**. Las conclusiones se limitan a los datos observados.

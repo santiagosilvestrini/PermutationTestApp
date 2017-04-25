@@ -1,6 +1,7 @@
+# Regresion
 regresion.box <- fluidPage(
-        useShinyjs(),
-        fluidRow(
-			"Codigo Regresion Linear"
-		)
+        div(class = "regreDiv",
+            withMathJax(uiOutput('markdownRegre'))
+        )
 )
+

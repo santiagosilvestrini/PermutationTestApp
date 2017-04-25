@@ -1,5 +1,5 @@
 ## INTRODUCCION ----------------------------------------------------------------------
-source('intro/intro.R', local=TRUE)
+source('intro/ui.R', local=TRUE)
 
 intro <- tabItem(
     tabName = "intro",
@@ -14,7 +14,7 @@ simulador <- tabItem(
     simulador.box
 )
 
-## SIMULADOR ------------------------------------------------------------
+## REGRESION ------------------------------------------------------------
 source('regresion/ui.R', local=TRUE)
 
 regresion <- tabItem(
@@ -22,7 +22,7 @@ regresion <- tabItem(
     regresion.box
 )
 
-## SIMULADOR ------------------------------------------------------------
+## ANOVA ------------------------------------------------------------
 source('anova/ui.R', local=TRUE)
 
 anova <- tabItem(
@@ -30,8 +30,16 @@ anova <- tabItem(
     anova.box
 )
 
+## CONCLUSIONES ----------------------------------------------------------------------
+source('conclu/ui.R', local=TRUE)
+
+conclu <- tabItem(
+    tabName = "conclu",
+    conclu.box
+)
+
 ## REFERENCIAS ------------------------------------------------------------
-source('refe/refe.R', local=TRUE)
+source('refe/ui.R', local=TRUE)
 
 refe <- tabItem(
     tabName = "refe",
@@ -43,8 +51,9 @@ body <- dashboardBody(
     #tags$head(includeScript("www/google-analytics.js")),
     tags$script(HTML("$('body').addClass('sidebar-mini');")),
     #tags$head(tags$style(HTML(".small-box {height: 50px}"))),
-    tags$head(tags$style(HTML(".small-box {width: 200px}"))),
+    tags$head(tags$style(HTML(".small-box {width: 150px}"))),
     tags$head(tags$style(HTML(".small-box .icon-large {font-size: 50px}"))),
+    tags$head(tags$style(HTML(".small-box p{font-size: 12px}"))),
     includeCSS("www/custom.css"),
     
     tabItems(
@@ -52,6 +61,7 @@ body <- dashboardBody(
         simulador,
         regresion,
         anova,
+        conclu,
         refe
     )
 )
